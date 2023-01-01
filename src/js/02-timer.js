@@ -114,3 +114,7 @@
 // Наступний функціонал не обов'язковий для здавання завдання, але буде хорошою додатковою практикою.
 
 // Для відображення повідомлень користувачеві, замість window.alert(), використовуй бібліотеку notiflix.
+
+import flatpickr from 'flatpickr';
+import 'flatpickr/dist/flatpickr.min.css';
+import Notiflix from 'notiflix';
