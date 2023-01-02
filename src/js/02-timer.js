@@ -1,5 +1,6 @@
 // Завдання 2 - таймер зворотного відліку
 // Виконуй це завдання у файлах 02-timer.html і 02-timer.js.
+
 // Напиши скрипт таймера, який здійснює зворотний відлік до певної дати.
 // Такий таймер може використовуватися у блогах та інтернет - магазинах,
 // сторінках реєстрації подій, під час технічного обслуговування тощо.
@@ -7,7 +8,7 @@
 
 // Елементи інтерфейсу
 // HTML містить готову розмітку таймера, поля вибору кінцевої дати і кнопку,
-// по кліку на яку, таймер повинен запускатися.Додай мінімальне оформлення елементів інтерфейсу.
+// по кліку на яку, таймер повинен запускатися. Додай мінімальне оформлення елементів інтерфейсу.
 
 // <input type="text" id="datetime-picker" />
 // <button type="button" data-start>Start</button>
@@ -42,7 +43,7 @@
 // import "flatpickr/dist/flatpickr.min.css";
 
 // Бібліотека очікує, що її ініціалізують на елементі input[type="text"],
-// тому ми додали до HTML документу поле input#datetime - picker.
+// тому ми додали до HTML документу поле input#datetime-picker.
 
 // <input type="text" id="datetime-picker" />
 
@@ -117,6 +118,7 @@
 
 // Для відображення повідомлень користувачеві, замість window.alert(), використовуй бібліотеку notiflix.
 
+// Для того щоб підключити CSS код бібліотеки в проект, необхідно додати ще один імпорт, крім того, що описаний в документації.
 import flatpickr from 'flatpickr';
 import 'flatpickr/dist/flatpickr.min.css';
 import Notiflix from 'notiflix';
@@ -130,15 +132,25 @@ let chosenTime = null;
 let deltaTime = null;
 let timerId = null;
 
+// Використовуй бібліотеку flatpickr для того, щоб дозволити користувачеві кросбраузерно
+// вибрати кінцеву дату і час в одному елементі інтерфейсу.
+// Другим аргументом функції flatpickr(selector, options) можна передати необов'язковий об'єкт параметрів.
 const flatpickRef = flatpickr('#datetime-picker', {
   enableTime: true,
   time_24hr: true,
   defaultDate: new Date(),
   minuteIncrement: 1,
+  // Метод onClose() з об'єкта параметрів викликається щоразу під час закриття елемента інтерфейсу,
+  // який створює flatpickr. Саме у ньому варто обробляти дату, обрану користувачем.
+  // Параметр selectedDates - це масив обраних дат, тому ми беремо перший елемент.
   onClose(selectedDates) {
     console.log(selectedDates[0]);
     setTimeout(() => {
+      // Якщо користувач вибрав дату в минулому, покажи window.alert() з текстом "Please choose a date in the future".
+      // Якщо користувач вибрав валідну дату (в майбутньому), кнопка «Start» стає активною.
+      // Кнопка «Start» повинна бути неактивною доти, доки користувач не вибрав дату в майбутньому.
       if (selectedDates[0].getTime() < Date.now()) {
+        // Для відображення повідомлень користувачеві, замість window.alert(), використовуй бібліотеку notiflix.
         Notiflix.Notify.failure('Please choose a date in the future');
         return;
       }
@@ -148,14 +160,19 @@ const flatpickRef = flatpickr('#datetime-picker', {
   },
 });
 
+// Натисканням на кнопку «Start» починається відлік часу до обраної дати з моменту натискання.
 function onStartButtonClick(event) {
   event.currentTarget.disabled = true;
 
+  // Натисканням на кнопку «Start» скрипт повинен обчислювати раз на секунду, скільки часу залишилось до вказаної дати,
+  // і оновлювати інтерфейс таймера, показуючи чотири цифри: дні, години, хвилини і секунди у форматі xx: xx: xx: xx.
   timerId = setInterval(() => {
     deltaTime = chosenTime.getTime() - Date.now();
 
+    // Функція convertMs() повертає об'єкт з розрахованим часом, що залишився до кінцевої дати.
     const { days, hours, minutes, seconds } = convertMs(deltaTime);
 
+    // Таймер повинен зупинятися, коли дійшов до кінцевої дати, тобто 00:00:00:00.
     if (deltaTime <= 0) {
       clearInterval(timerId);
       flatpickRef.element.disabled = false;
@@ -166,6 +183,8 @@ function onStartButtonClick(event) {
 }
 
 function updateTimer({ days, hours, minutes, seconds }) {
+  // Зверни увагу, що вона не форматує результат. Тобто, якщо залишилося 4 хвилини або будь-якої іншої складової часу,
+  // то функція поверне 4, а не 04. В інтерфейсі таймера необхідно додавати 0, якщо в числі менше двох символів.
   timerContainer.firstElementChild.firstElementChild.textContent =
     addLeadingZero(`${days}`);
   timerContainer.children[1].firstElementChild.textContent = addLeadingZero(
@@ -177,6 +196,8 @@ function updateTimer({ days, hours, minutes, seconds }) {
   timerContainer.lastElementChild.firstElementChild.textContent =
     addLeadingZero(`${seconds}`);
 
+  // НЕ БУДЕМО УСКЛАДНЮВАТИ
+  // Якщо таймер запущений, для того щоб вибрати нову дату і перезапустити його - необхідно перезавантажити сторінку.
   flatpickRef.element.disabled = true;
 }
 
@@ -199,6 +220,7 @@ function convertMs(ms) {
   return { days, hours, minutes, seconds };
 }
 
+// Напиши функцію addLeadingZero(value), яка використовує метод padStart() і перед рендерингом інтефрейсу форматує значення.
 function addLeadingZero(value) {
   return String(value).padStart(2, '0');
 }
