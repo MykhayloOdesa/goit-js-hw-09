@@ -35,6 +35,7 @@ const flatpickRef = flatpickr('#datetime-picker', {
     if (selectedDates[0].getTime() < Date.now()) {
       // Для відображення повідомлень користувачеві, замість window.alert(), використовуй бібліотеку notiflix.
       Notiflix.Notify.failure('Please choose a date in the future');
+      startButton.setAttribute('disabled', true);
       return;
     }
     startButton.removeAttribute('disabled');
